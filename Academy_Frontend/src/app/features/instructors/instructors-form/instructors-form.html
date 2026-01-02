@@ -1,0 +1,63 @@
+<div class="flex justify-center items-center mb-4">
+  <button class="bg-green-500 text-white px-4 py-2 rounded" (click)="Add_Ins()">Add Instructors +</button>
+</div>
+
+<div *ngIf="is_Add_Mode" class="fixed inset-0 bg-black/25 backdrop-blur-md flex items-center justify-center z-50">
+  <div class="bg-white w-full max-w-md rounded-lg shadow-lg p-6 relative">
+    <button type="button" class="absolute top-2 right-2 text-gray-500 hover:text-black" (click)="onCancel()">
+      ✕
+    </button>
+
+    <h2 class="text-xl font-semibold mb-4 text-center">Add Instructor</h2>
+
+    <form [formGroup]="instructorForm" (ngSubmit)="onSubmit()" class="space-y-4">
+
+      
+      <input formControlName="name" placeholder="Name" class="border px-3 py-2 w-full rounded" />
+      <div class="text-red-500 text-sm"
+        *ngIf="instructorForm.get('name')?.dirty && instructorForm.get('name')?.errors">
+        <span *ngIf="instructorForm.get('name')?.errors?.['required']">Name is required</span>
+        <span *ngIf="instructorForm.get('name')?.errors?.['pattern']">Only letters allowed. Single spaces between words.</span>
+        <span *ngIf="instructorForm.get('name')?.errors?.['minlength']">Minimum Two Char</span>
+      </div>
+
+      <input formControlName="jutsu_type" placeholder="Jutsu Type" class="border px-3 py-2 w-full rounded" />
+      <div class="text-red-500 text-sm"
+        *ngIf="instructorForm.get('jutsu_type')?.dirty && instructorForm.get('jutsu_type')?.errors">
+        <span *ngIf="instructorForm.get('jutsu_type')?.errors?.['required']">Jutsu Type is required</span>
+        <span *ngIf="instructorForm.get('jutsu_type')?.errors?.['pattern']">Only letters allowed. Single spaces between words.</span>
+        <span *ngIf="instructorForm.get('jutsu_type')?.errors?.['minlength']">Minimum Eight Char</span>
+      </div>
+
+     
+      <input formControlName="chakra_type" placeholder="Chakra Type" class="border px-3 py-2 w-full rounded" />
+      <div class="text-red-500 text-sm"
+        *ngIf="instructorForm.get('chakra_type')?.touched && instructorForm.get('chakra_type')?.errors">
+        <span *ngIf="instructorForm.get('chakra_type')?.errors?.['pattern']">Only letters allowed. Single spaces between words.</span>
+        <span *ngIf="instructorForm.get('chakra_type')?.errors?.['minlength']">Minimum Four Char</span>
+      </div>
+
+    
+      <input formControlName="signature_jutsu" placeholder="Signature Jutsu" class="border px-3 py-2 w-full rounded" />
+      <div class="text-red-500 text-sm"
+        *ngIf="instructorForm.get('signature_jutsu')?.touched && instructorForm.get('signature_jutsu')?.errors">
+        <span *ngIf="instructorForm.get('signature_jutsu')?.errors?.['pattern']">Only letters allowed. Single spaces between words.</span>
+        <span *ngIf="instructorForm.get('signature_jutsu')?.errors?.['maxlength']">Maximum 60 char allowed</span>
+      </div>
+
+      <input formControlName="summon_type" placeholder="Summon Type" class="border px-3 py-2 w-full rounded" />
+      <div class="text-red-500 text-sm"
+        *ngIf="instructorForm.get('summon_type')?.dirty && instructorForm.get('summon_type')?.errors">
+        <span *ngIf="instructorForm.get('summon_type')?.errors?.['pattern']">Only letters allowed. Single spaces between words.</span>
+        <span *ngIf="instructorForm.get('summon_type')?.errors?.['maxlength']">Maximum 30 char allowed</span>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button" class="px-4 py-2 rounded border" (click)="onCancel()">Cancel</button>
+        <button type="submit" [disabled]="instructorForm.invalid"
+          class="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50">Save</button>
+      </div>
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,55 @@
+<div class="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="bg-white rounded-lg p-6 w-96">
+        <h2 class="text-xl font-bold mb-4">Edit Instructor</h2>
+        <form [formGroup]="form" (ngSubmit)="onSave()">
+            <label class="font-medium">Name</label>
+            <input class="w-full border px-2 py-1 rounded mb-1" formControlName="name">
+
+            <div class="text-red-500 text-sm mb-2" *ngIf="form.get('name')?.dirty && form.get('name')?.errors">
+                <div *ngIf="form.get('name')?.errors?.['required']">Name is required.</div>
+                <div *ngIf="form.get('name')?.errors?.['pattern']"> Only letters allowed. Single spaces between words.</div>
+                <div *ngIf="form.get('name')?.errors?.['minlength']">Minimum 2 characters required.</div>
+            </div>
+
+            <label class="font-medium">Jutsu Type</label>
+            <input class="w-full border px-2 py-1 rounded mb-1" formControlName="jutsu_type">
+
+            <div class="text-red-500 text-sm mb-2" *ngIf="form.get('jutsu_type')?.dirty && form.get('jutsu_type')?.errors">
+                <div *ngIf="form.get('jutsu_type')?.errors?.['required']">Jutsu Type is required.</div>
+                <div *ngIf="form.get('jutsu_type')?.errors?.['pattern']">Only letters allowed. Single spaces between words.</div>
+                <div *ngIf="form.get('jutsu_type')?.errors?.['minlength']">Minimum 8 characters required.</div>
+            </div>
+
+
+            <label class="font-medium">Chakra Type</label>
+            <input class="w-full border px-2 py-1 rounded mb-1" formControlName="chakra_type">
+
+            <div class="text-red-500 text-sm mb-2"*ngIf="form.get('chakra_type')?.dirty && form.get('chakra_type')?.errors">
+                <div *ngIf="form.get('chakra_type')?.errors?.['pattern']">Only letters allowed. Single spaces between words.</div>
+                <div *ngIf="form.get('chakra_type')?.errors?.['minlength']"> Minimum 4 characters required.</div>
+            </div>
+
+            <label class="font-medium">Signature Jutsu</label>
+            <input class="w-full border px-2 py-1 rounded mb-1" formControlName="signature_jutsu">
+
+            <div class="text-red-500 text-sm mb-2" *ngIf="form.get('signature_jutsu')?.dirty && form.get('signature_jutsu')?.errors">
+                <div *ngIf="form.get('signature_jutsu')?.errors?.['pattern']"> Only letters allowed. Single spaces between words.</div>
+                <div *ngIf="form.get('signature_jutsu')?.errors?.['maxlength']"> Maximum 60 characters allowed. </div>
+            </div>
+
+            <label class="font-medium">Summon Type</label>
+            <input class="w-full border px-2 py-1 rounded mb-1" formControlName="summon_type">
+
+            <div class="text-red-500 text-sm mb-2"*ngIf="form.get('summon_type')?.dirty && form.get('summon_type')?.errors">
+                <div *ngIf="form.get('summon_type')?.errors?.['pattern']"> Only letters allowed. Single spaces between words.</div>
+                <div *ngIf="form.get('summon_type')?.errors?.['maxlength']">Maximum 30 characters allowed.</div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4">
+                <button type="button" class="px-3 py-1 bg-gray-400 text-white rounded" (click)="cancel()">Cancel</button>
+                <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded disabled:opacity-50"[disabled]="form.invalid">Save </button>
+            </div>
+
+        </form>
+    </div>
+</div>

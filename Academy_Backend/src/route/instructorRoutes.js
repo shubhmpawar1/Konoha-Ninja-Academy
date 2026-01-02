@@ -1,0 +1,13 @@
+const express = require('express');
+const router = express.Router();
+const instructorController = require('../controllers/instructorController');
+router.get('/instructors/count', instructorController.getInstructorCount);
+router.post('/instructors', instructorController.createInstructor);
+router.get('/instructors', instructorController.getAllInstructors);
+router.get('/paginated', instructorController.getPaginated);
+router.delete('/instructors/:id', instructorController.deleteInstructor);
+router.get('/instructors/:id', instructorController.getInstructorById);
+router.put('/instructors/:id', instructorController.updateInstructor);
+router.post('/instructors/:id/disable', instructorController.disableInstructor);
+router.patch('/instructors/:id/enable', instructorController.enableInstructor);
+module.exports = router;
