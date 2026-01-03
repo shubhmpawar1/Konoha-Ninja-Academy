@@ -185,6 +185,7 @@ onDeleteConfirmed(): void {
   this.instructorService.deleteInstructor(instructorId).subscribe({
     next: () => {
       this.notify.success(`Instructor "${instructorName}" deleted successfully`);
+      this.loadInstructors();
 
       // Fetch fresh data from backend to sync table
       this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize)
