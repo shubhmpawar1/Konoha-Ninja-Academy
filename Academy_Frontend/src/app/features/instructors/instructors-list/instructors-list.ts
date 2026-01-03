@@ -32,7 +32,7 @@ export class InstructorsList implements OnInit, OnChanges {
   error: string | null = null;
 
   Math = Math;
- 
+
 
 
   constructor(
@@ -132,30 +132,30 @@ export class InstructorsList implements OnInit, OnChanges {
     });
   }
 
-onEditSave(): void {
-  if (!this.selectedInstructor || this.editForm.invalid) return;
+  onEditSave(): void {
+    if (!this.selectedInstructor || this.editForm.invalid) return;
 
-  const payload = {
-    id: this.selectedInstructor.id!,
-    ...this.editForm.value
-  };
+    const payload = {
+      id: this.selectedInstructor.id!,
+      ...this.editForm.value
+    };
 
-  this.instructorService
-    .updateInstructor(payload.id, payload)
-    .subscribe({
-      next: () => {
-        this.notify.success('Instructor updated successfully');
-        this.closeEditModal();
-        this.loadInstructors();
-      },
-      error: (err) => {
-        console.error('Error updating instructor:', err);
-        this.notify.error('Failed to update instructor. Please try again.');
-        this.closeEditModal();
-        this.loadInstructors();
-      }
-    });
-}
+    this.instructorService
+      .updateInstructor(payload.id, payload)
+      .subscribe({
+        next: () => {
+          this.notify.success('Instructor updated successfully');
+          this.closeEditModal();
+          this.loadInstructors();
+        },
+        error: (err) => {
+          console.error('Error updating instructor:', err);
+          this.notify.error('Failed to update instructor. Please try again.');
+          this.closeEditModal();
+          this.loadInstructors();
+        }
+      });
+  }
 
   closeEditModal(): void {
     this.selectedInstructor = null;
@@ -166,40 +166,40 @@ onEditSave(): void {
     this.selectedInstructor = instructor;
     this.showDeleteModal = true;
   }
-onDeleteConfirmed(): void {
-  if (!this.selectedInstructor) return;
+  onDeleteConfirmed(): void {
+    if (!this.selectedInstructor) return;
 
-  const instructorId = this.selectedInstructor.id!;
-  const instructorName = this.selectedInstructor.name;
+    const instructorId = this.selectedInstructor.id!;
+    const instructorName = this.selectedInstructor.name;
 
-  // Close the modal immediately
-  this.closeDeleteModal();
+    // Close the modal immediately
+    this.closeDeleteModal();
 
-  // Delete the instructor
-  this.instructorService.deleteInstructor(instructorId).subscribe({
-    next: () => {
-      this.notify.success(`Instructor "${instructorName}" deleted successfully`);
+    // Delete the instructor
+    this.instructorService.deleteInstructor(instructorId).subscribe({
+      next: () => {
+        this.notify.success(`Instructor "${instructorName}" deleted successfully`);
 
-      // Reload the instructor list after deletion
-      this.loadInstructors();
-    },
-    error: (err) => {
-      if (err.status === 409) {
-        this.notify.error(`Cannot delete instructor "${instructorName}" because students are assigned.`);
-      } else if (err.status === 404) {
-        this.notify.error(`Instructor "${instructorName}" not found or already deleted.`);
-      } else {
-        this.notify.error(`Failed to delete instructor "${instructorName}".`);
+        // Reload the instructor list after deletion
+        this.loadInstructors();
+      },
+      error: (err) => {
+        if (err.status === 409) {
+          this.notify.error(`Cannot delete instructor "${instructorName}" because students are assigned.`);
+        } else if (err.status === 404) {
+          this.notify.error(`Instructor "${instructorName}" not found or already deleted.`);
+        } else {
+          this.notify.error(`Failed to delete instructor "${instructorName}".`);
+        }
+
+        // Reload list to ensure table is updated
+        this.loadInstructors();
       }
+    });
 
-      // Reload list to ensure table is updated
-      this.loadInstructors();
-    }
-  });
-
-  // Clear the selected instructor
-  this.selectedInstructor = null;
-}
+    // Clear the selected instructor
+    this.selectedInstructor = null;
+  }
 
 
 
@@ -213,46 +213,46 @@ onDeleteConfirmed(): void {
     this.showDisableModal = true;
   }
 
-onDisableConfirmed(): void {
-  if (!this.selectedInstructor) return;
+  onDisableConfirmed(): void {
+    if (!this.selectedInstructor) return;
 
-  const instructor = this.selectedInstructor;
-  const action$ = instructor.is_active
-    ? this.instructorService.disableInstructor(instructor.id!)
-    : this.instructorService.enableInstructor(instructor.id!);
+    const instructor = this.selectedInstructor;
+    const action$ = instructor.is_active
+      ? this.instructorService.disableInstructor(instructor.id!)
+      : this.instructorService.enableInstructor(instructor.id!);
 
-  action$.pipe(
-    switchMap(() => this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize))
-  ).subscribe({
-    next: (response) => {
-      this.$paginatedData = of(response).pipe(shareReplay(1));
-      this.$instructor = this.$paginatedData.pipe(map(res => res.data));
-      
-     
-      if (instructor.is_active) {
-        this.notify.success('Instructor disabled successfully');
-      } else {
-        this.notify.success('Instructor enabled successfully');
+    action$.pipe(
+      switchMap(() => this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize))
+    ).subscribe({
+      next: (response) => {
+        this.$paginatedData = of(response).pipe(shareReplay(1));
+        this.$instructor = this.$paginatedData.pipe(map(res => res.data));
+
+
+        if (instructor.is_active) {
+          this.notify.success('Instructor disabled successfully');
+        } else {
+          this.notify.success('Instructor enabled successfully');
+        }
+
+        this.closeDisableModal();
+        this.loadInstructors();
+      },
+      error: (err) => {
+        console.error('Error updating instructor status:', err);
+
+
+        if (instructor.is_active) {
+          this.notify.error('Failed to disable instructor. Please try again.');
+        } else {
+          this.notify.error('Failed to enable instructor. Please try again.');
+        }
+
+        this.closeDisableModal();
+        this.loadInstructors();
       }
-      
-      this.closeDisableModal();
-      this.loadInstructors();
-    },
-    error: (err) => {
-      console.error('Error updating instructor status:', err);
-      
-      
-      if (instructor.is_active) {
-        this.notify.error('Failed to disable instructor. Please try again.');
-      } else {
-        this.notify.error('Failed to enable instructor. Please try again.');
-      }
-      
-      this.closeDisableModal();
-      this.loadInstructors();
-    }
-  });
-}
+    });
+  }
   closeDisableModal(): void {
     this.showDisableModal = false;
     this.selectedInstructor = null;
