@@ -176,22 +176,19 @@ export class InstructorsList implements OnInit, OnChanges {
     this.closeDeleteModal();
 
     // Delete the instructor
-    this.instructorService.deleteInstructor(instructorId).pipe(
-      // After deletion, fetch the latest list
-      switchMap(() => this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize)),
-      tap(response => {
-        // Notify success
-        this.notify.success(`Instructor "${instructorName}" deleted successfully updated`);
+    this.instructorService.deleteInstructor(instructorId).subscribe({
+      next: () => {
+        // Show toast
+        this.notify.success(`Instructor "${instructorName}" deleted successfully`);
 
-        // Update paginated data Observable
-        this.$paginatedData = of(response).pipe(shareReplay(1));
+        // Force a fresh API call to get updated list
+        this.$paginatedData = this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize);
 
-        // Update instructor list Observable
+        // Re-derive the instructor list from the updated data
         this.$instructor = this.$paginatedData.pipe(map(res => res.data));
-      })
-    ).subscribe({
+
+      },
       error: (err) => {
-        // Handle errors
         if (err.status === 409) {
           this.notify.error(`Cannot delete instructor "${instructorName}" because students are assigned.`);
         } else if (err.status === 404) {
@@ -200,12 +197,12 @@ export class InstructorsList implements OnInit, OnChanges {
           this.notify.error(`Failed to delete instructor "${instructorName}".`);
         }
 
-        // Reload instructors to ensure UI consistency
+        // Reload the list even on error
         this.loadInstructors();
       }
     });
 
-    // Clear the selected instructor to prevent double-delete
+    // Clear the selected instructor
     this.selectedInstructor = null;
   }
 
