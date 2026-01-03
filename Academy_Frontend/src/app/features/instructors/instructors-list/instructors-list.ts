@@ -187,7 +187,7 @@ export class InstructorsList implements OnInit, OnChanges {
       .deleteInstructor(this.selectedInstructor.id!)
       .subscribe({
         next: () => {
-          this.notify.success('Instructor deleted successfully updated-2');
+          this.notify.success('Instructor deleted successfully updated-3');
           this.closeDeleteModal();
           this.refresh$.next(); // 🔥 refresh table
         },
