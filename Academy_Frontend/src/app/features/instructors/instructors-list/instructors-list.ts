@@ -175,22 +175,23 @@ export class InstructorsList implements OnInit, OnChanges {
     // Close the modal immediately
     this.closeDeleteModal();
 
-    // Call the delete API
-    this.instructorService.deleteInstructor(instructorId).subscribe({
-      next: () => {
-        // Show success toast
-        this.notify.success(`Instructor "${instructorName}" deleted successfully`);
+    // Delete the instructor
+    this.instructorService.deleteInstructor(instructorId).pipe(
+      // After deletion, fetch the latest list
+      switchMap(() => this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize)),
+      tap(response => {
+        // Notify success
+        this.notify.success(`Instructor "${instructorName}" deleted successfully updated`);
 
-        // Update the UI instantly by filtering out the deleted instructor
-        this.$instructor = this.$instructor.pipe(
-          map(list => list.filter(i => i.id !== instructorId))
-        );
+        // Update paginated data Observable
+        this.$paginatedData = of(response).pipe(shareReplay(1));
 
-        // Optional: reload from API to ensure data consistency
-        this.loadInstructors();
-      },
+        // Update instructor list Observable
+        this.$instructor = this.$paginatedData.pipe(map(res => res.data));
+      })
+    ).subscribe({
       error: (err) => {
-        // Show proper error messages based on status code
+        // Handle errors
         if (err.status === 409) {
           this.notify.error(`Cannot delete instructor "${instructorName}" because students are assigned.`);
         } else if (err.status === 404) {
@@ -199,14 +200,15 @@ export class InstructorsList implements OnInit, OnChanges {
           this.notify.error(`Failed to delete instructor "${instructorName}".`);
         }
 
-        // Reload data to keep table in sync
+        // Reload instructors to ensure UI consistency
         this.loadInstructors();
       }
     });
 
-    // Clear the selected instructor to avoid accidental double-delete
+    // Clear the selected instructor to prevent double-delete
     this.selectedInstructor = null;
   }
+
 
 
 
