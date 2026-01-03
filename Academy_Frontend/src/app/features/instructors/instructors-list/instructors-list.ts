@@ -1,168 +1,179 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Instructor, InstructorService, PaginatedResponse } from '../../../core/services/instructor-service';
-import { Observable, switchMap, tap, catchError, of, map, shareReplay, EMPTY } from 'rxjs';
-import { ReactiveFormsModule, FormGroup, FormBuilder, Validators, FormsModule } from '@angular/forms';
+import {
+  Instructor,
+  InstructorService,
+  PaginatedResponse
+} from '../../../core/services/instructor-service';
+import {
+  Observable,
+  Subject,
+  switchMap,
+  startWith,
+  map,
+  catchError,
+  of,
+  tap
+} from 'rxjs';
+import {
+  ReactiveFormsModule,
+  FormGroup,
+  FormBuilder,
+  Validators,
+  FormsModule
+} from '@angular/forms';
 import { InstructorsDelete } from '../instructors-delete/instructors-delete';
 import { InstructorsDisable } from '../instructors-disable/instructors-disable';
-import { InstructorsEdit } from "../instructors-edit/instructors-edit";
+import { InstructorsEdit } from '../instructors-edit/instructors-edit';
 import { Notification } from '../../../core/services/notification';
-import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-instructors-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, InstructorsDelete, InstructorsDisable, InstructorsEdit],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    InstructorsDelete,
+    InstructorsDisable,
+    InstructorsEdit
+  ],
   templateUrl: './instructors-list.html',
-  styleUrl: './instructors-list.css',
+  styleUrl: './instructors-list.css'
 })
 export class InstructorsList implements OnInit, OnChanges {
   @Input() reloadTrigger: any;
-  $instructor!: Observable<Instructor[]>;
+
   $paginatedData!: Observable<PaginatedResponse>;
+  $instructor!: Observable<Instructor[]>;
+
+  private refresh$ = new Subject<void>();
+
   currentPage = 1;
   pageSize = 5;
   pageSizeOptions = [5, 10, 20, 50];
 
   selectedInstructor: Instructor | null = null;
   editForm!: FormGroup;
+
   showDisableModal = false;
   showDeleteModal = false;
   showEditModal = false;
+
   isLoading = false;
   error: string | null = null;
 
   Math = Math;
 
-
-
   constructor(
     private instructorService: InstructorService,
     private fb: FormBuilder,
-    public notify: Notification,
-    private cdr: ChangeDetectorRef
-  ) { }
+    public notify: Notification
+  ) {}
+
+  // -------------------- INIT --------------------
 
   ngOnInit(): void {
-    this.loadInstructors();
+    this.buildDataStream();
   }
 
   ngOnChanges(): void {
     if (this.reloadTrigger) {
-      this.loadInstructors();
+      this.refresh$.next();
     }
   }
 
-  loadInstructors(): void {
-    this.isLoading = true;
-    this.error = null;
+  // -------------------- DATA STREAM --------------------
 
-    this.$paginatedData = this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize).pipe(
-      tap(response => {
-        console.log('Instructors loaded:', response);
-        this.isLoading = false;
+  private buildDataStream(): void {
+    this.$paginatedData = this.refresh$.pipe(
+      startWith(void 0),
+      tap(() => {
+        this.isLoading = true;
+        this.error = null;
       }),
-      catchError(err => {
-        console.error('Error loading instructors:', err);
-        this.error = 'Failed to load instructors. Please try again.';
-        this.isLoading = false;
-        return of({ data: [], pagination: { page: 1, limit: 5, total: 0, totalPages: 0, hasNext: false, hasPrev: false } });
-      }),
-      shareReplay(1)
+      switchMap(() =>
+        this.instructorService
+          .getPaginatedInstructors(this.currentPage, this.pageSize)
+          .pipe(
+            catchError(err => {
+              console.error('Load error:', err);
+              this.error = 'Failed to load instructors';
+              return of({
+                data: [],
+                pagination: {
+                  page: 1,
+                  limit: this.pageSize,
+                  total: 0,
+                  totalPages: 0,
+                  hasNext: false,
+                  hasPrev: false
+                }
+              });
+            })
+          )
+      ),
+      tap(() => (this.isLoading = false))
     );
-
 
     this.$instructor = this.$paginatedData.pipe(
-      map(response => response.data)
+      map(res => res.data)
     );
   }
+
+  // -------------------- PAGINATION --------------------
 
   onPageChange(page: number): void {
     this.currentPage = page;
-    this.loadInstructors();
+    this.refresh$.next();
   }
 
-  onPageSizeChange(newSize: number): void {
-    this.pageSize = newSize;
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
     this.currentPage = 1;
-    this.loadInstructors();
+    this.refresh$.next();
   }
+
+  // -------------------- EDIT --------------------
 
   openEdit(instructor: Instructor): void {
     this.selectedInstructor = instructor;
     this.showEditModal = true;
 
     this.editForm = this.fb.group({
-      name: [
-        instructor.name,
-        [
-          Validators.required,
-          Validators.pattern(/^[A-Za-z]+(?: [A-Za-z]+)*$/),
-          Validators.minLength(2)
-        ]
-      ],
-      jutsu_type: [
-        instructor.jutsu_type,
-        [
-          Validators.required,
-          Validators.pattern(/^[A-Za-z]+(?: [A-Za-z]+)*$/),
-          Validators.minLength(8)
-        ]
-      ],
-      chakra_type: [
-        instructor.chakra_type,
-        [
-          Validators.pattern(/^[A-Za-z]+(?: [A-Za-z]+)*$/),
-          Validators.minLength(4)
-        ]
-      ],
-      signature_jutsu: [
-        instructor.signature_jutsu,
-        [
-          Validators.pattern(/^[A-Za-z]+(?: [A-Za-z]+)*$/),
-          Validators.maxLength(60)
-        ]
-      ],
-      summon_type: [
-        instructor.summon_type,
-        [
-          Validators.pattern(/^[A-Za-z]+(?: [A-Za-z]+)*$/),
-          Validators.maxLength(30)
-        ]
-      ],
-      is_active: [instructor.is_active],
+      name: [instructor.name, [Validators.required, Validators.minLength(2)]],
+      jutsu_type: [instructor.jutsu_type, Validators.required],
+      chakra_type: [instructor.chakra_type],
+      signature_jutsu: [instructor.signature_jutsu],
+      summon_type: [instructor.summon_type],
+      is_active: [instructor.is_active]
     });
   }
 
   onEditSave(): void {
     if (!this.selectedInstructor || this.editForm.invalid) return;
 
-    const payload = {
-      id: this.selectedInstructor.id!,
-      ...this.editForm.value
-    };
-
     this.instructorService
-      .updateInstructor(payload.id, payload)
+      .updateInstructor(this.selectedInstructor.id!, this.editForm.value)
       .subscribe({
         next: () => {
           this.notify.success('Instructor updated successfully');
           this.closeEditModal();
-          this.loadInstructors();
+          this.refresh$.next();
         },
-        error: (err) => {
-          console.error('Error updating instructor:', err);
-          this.notify.error('Failed to update instructor. Please try again.');
+        error: () => {
+          this.notify.error('Failed to update instructor');
           this.closeEditModal();
-          this.loadInstructors();
         }
       });
   }
 
   closeEditModal(): void {
-    this.selectedInstructor = null;
     this.showEditModal = false;
+    this.selectedInstructor = null;
   }
+
+  // -------------------- DELETE --------------------
 
   openDelete(instructor: Instructor): void {
     this.selectedInstructor = instructor;
@@ -177,27 +188,18 @@ export class InstructorsList implements OnInit, OnChanges {
       .subscribe({
         next: () => {
           this.notify.success('Instructor deleted successfully');
-
-          // CLOSE MODAL FIRST
-          this.showDeleteModal = false;
-          this.selectedInstructor = null;
-
-          // FORCE UI UPDATE
-          this.cdr.detectChanges();
-
-          // THEN reload data
-          this.loadInstructors();
+          this.closeDeleteModal();
+          this.refresh$.next(); // 🔥 refresh table
         },
-        error: (err) => {
+        error: err => {
           if (err.status === 409) {
-            this.notify.error('Cannot delete instructor because students are assigned.');
+            this.notify.error(
+              'Cannot delete instructor because students are assigned'
+            );
           } else {
-            this.notify.error('Failed to delete instructor.');
+            this.notify.error('Failed to delete instructor');
           }
-
-          this.showDeleteModal = false;
-          this.selectedInstructor = null;
-          this.cdr.detectChanges();
+          this.closeDeleteModal();
         }
       });
   }
@@ -206,6 +208,8 @@ export class InstructorsList implements OnInit, OnChanges {
     this.showDeleteModal = false;
     this.selectedInstructor = null;
   }
+
+  // -------------------- DISABLE / ENABLE --------------------
 
   openDisable(instructor: Instructor): void {
     this.selectedInstructor = instructor;
@@ -220,38 +224,23 @@ export class InstructorsList implements OnInit, OnChanges {
       ? this.instructorService.disableInstructor(instructor.id!)
       : this.instructorService.enableInstructor(instructor.id!);
 
-    action$.pipe(
-      switchMap(() => this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize))
-    ).subscribe({
-      next: (response) => {
-        this.$paginatedData = of(response).pipe(shareReplay(1));
-        this.$instructor = this.$paginatedData.pipe(map(res => res.data));
-
-
-        if (instructor.is_active) {
-          this.notify.success('Instructor disabled successfully');
-        } else {
-          this.notify.success('Instructor enabled successfully');
-        }
-
+    action$.subscribe({
+      next: () => {
+        this.notify.success(
+          instructor.is_active
+            ? 'Instructor disabled successfully'
+            : 'Instructor enabled successfully'
+        );
         this.closeDisableModal();
-        this.loadInstructors();
+        this.refresh$.next(); // 🔥 refresh table
       },
-      error: (err) => {
-        console.error('Error updating instructor status:', err);
-
-
-        if (instructor.is_active) {
-          this.notify.error('Failed to disable instructor. Please try again.');
-        } else {
-          this.notify.error('Failed to enable instructor. Please try again.');
-        }
-
+      error: () => {
+        this.notify.error('Failed to update instructor status');
         this.closeDisableModal();
-        this.loadInstructors();
       }
     });
   }
+
   closeDisableModal(): void {
     this.showDisableModal = false;
     this.selectedInstructor = null;
