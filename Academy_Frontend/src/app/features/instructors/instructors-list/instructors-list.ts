@@ -166,28 +166,25 @@ export class InstructorsList implements OnInit, OnChanges {
     this.selectedInstructor = instructor;
     this.showDeleteModal = true;
   }
+
   onDeleteConfirmed(): void {
     if (!this.selectedInstructor) return;
 
     const instructorId = this.selectedInstructor.id!;
     const instructorName = this.selectedInstructor.name;
 
-    // Close the modal immediately
+    // Close modal immediately
     this.closeDeleteModal();
 
-    // Delete the instructor
+    // Call delete API
     this.instructorService.deleteInstructor(instructorId).subscribe({
       next: () => {
-        // Show success toast
-        this.notify.success(`Instructor "${instructorName}" deleted successfully ui update`);
+        // Show toast
+        this.notify.success(`Instructor "${instructorName}" deleted successfully`);
 
-        // Force a fresh API call without caching
-        this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize)
-          .subscribe(response => {
-            // Update Observables to trigger async pipe
-            this.$paginatedData = of(response); // no shareReplay here
-            this.$instructor = of(response.data);
-          });
+        // Reload the table by fetching fresh data from backend
+        this.$paginatedData = this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize);
+        this.$instructor = this.$paginatedData.pipe(map(res => res.data));
 
       },
       error: (err) => {
@@ -199,14 +196,15 @@ export class InstructorsList implements OnInit, OnChanges {
           this.notify.error(`Failed to delete instructor "${instructorName}".`);
         }
 
-        // Reload list to sync UI
+        // Reload list to keep table in sync
         this.loadInstructors();
       }
     });
 
-    // Clear selectedInstructor to prevent double-delete
+    // Clear selectedInstructor
     this.selectedInstructor = null;
   }
+
 
 
 
