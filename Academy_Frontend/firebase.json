@@ -1,13 +1,16 @@
 {
   "hosting": {
-    "public": "dist/Academy_Frontend",
+    "public": "konoha-ninja-academy",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
     "rewrites": [
-      { "source": "**", "destination": "/index.html" }
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ]
   }
 }
