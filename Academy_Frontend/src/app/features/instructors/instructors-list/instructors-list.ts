@@ -169,33 +169,37 @@ onEditSave(): void {
 onDeleteConfirmed(): void {
   if (!this.selectedInstructor) return;
 
-  // Store the instructor locally
   const instructorId = this.selectedInstructor.id!;
+  const instructorName = this.selectedInstructor.name;
 
-  // Immediately close the modal
+  // Close modal immediately
   this.closeDeleteModal();
 
-  this.instructorService.deleteInstructor(instructorId).subscribe({
-    next: () => {
-      // Give Angular a tick to update the DOM
-      setTimeout(() => {
-        this.notify.success('Instructor deleted successfully');
-        this.loadInstructors();
-      });
+  this.instructorService.deleteInstructor(instructorId).pipe(
+    // After delete, reload the paginated data
+    switchMap(() => this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize))
+  ).subscribe({
+    next: (response) => {
+      // Update Observables directly
+      this.$paginatedData = of(response).pipe(shareReplay(1));
+      this.$instructor = this.$paginatedData.pipe(map(res => res.data));
+
+      this.notify.success(`Instructor "${instructorName}" deleted successfully`);
     },
     error: (err) => {
-      setTimeout(() => {
-        if (err.status === 409) {
-          this.notify.error(
-            'Cannot delete instructor because students are assigned.'
-          );
-        } else {
-          this.notify.error('Failed to delete instructor.');
-        }
-        this.loadInstructors();
-      });
+      if (err.status === 409) {
+        this.notify.error(`Cannot delete instructor "${instructorName}" because students are assigned.`);
+      } else {
+        this.notify.error(`Failed to delete instructor "${instructorName}".`);
+      }
+
+      // Reload list anyway to keep table in sync
+      this.loadInstructors();
     }
   });
+
+  // Clear selectedInstructor
+  this.selectedInstructor = null;
 }
 
 
