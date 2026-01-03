@@ -179,7 +179,7 @@ export class InstructorsList implements OnInit, OnChanges {
     this.instructorService.deleteInstructor(instructorId).subscribe({
       next: () => {
         // Show success toast
-        this.notify.success(`Instructor "${instructorName}" deleted successfully`);
+        this.notify.success(`Instructor "${instructorName}" deleted successfully ui update`);
 
         // Force a fresh API call without caching
         this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize)
