@@ -35,7 +35,7 @@ export interface PaginatedResponse {
   providedIn: 'root',
 })
 export class InstructorService {
-  private readonly API_URL = 'http://localhost:7777/api';
+  private readonly API_URL = 'https://konoha-ninja-academy.onrender.com/api';
   constructor(private http: HttpClient) { }
   getInstructorCounts(): Observable<InstructorCounts> {
     return this.http.get<InstructorCounts>(`${this.API_URL}/instructors/count`);
