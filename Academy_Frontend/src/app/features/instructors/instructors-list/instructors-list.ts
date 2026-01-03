@@ -173,40 +173,46 @@ onDeleteConfirmed(): void {
   const instructorId = this.selectedInstructor.id!;
   const instructorName = this.selectedInstructor.name;
 
-  // Close modal first
+  // Close the modal immediately
   this.closeDeleteModal();
 
-  // Delete instructor
+  // Remove from local UI instantly
+  this.$instructor = this.$instructor.pipe(
+    map(list => list.filter(i => i.id !== instructorId))
+  );
+
+  // Call backend to delete
   this.instructorService.deleteInstructor(instructorId).subscribe({
     next: () => {
       this.notify.success(`Instructor "${instructorName}" deleted successfully`);
 
-      // Update UI immediately by removing locally
-      this.$instructor = this.$instructor.pipe(
-        map(list => list.filter(i => i.id !== instructorId))
-      );
-
-      // Then fetch fresh paginated data from backend to stay in sync
+      // Fetch fresh data from backend to sync table
       this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize)
         .subscribe(response => {
-          this.$paginatedData = of(response);   // replace Observable
-          this.$instructor = of(response.data); // replace Observable again to trigger async pipe
+          // Replace Observables completely
+          this.$paginatedData = of(response); 
+          this.$instructor = of(response.data);
         });
     },
     error: (err) => {
+      // Show proper error toast
       if (err.status === 409) {
         this.notify.error(`Cannot delete instructor "${instructorName}" because students are assigned.`);
+      } else if (err.status === 404) {
+        this.notify.error(`Instructor "${instructorName}" not found or already deleted.`);
       } else {
         this.notify.error(`Failed to delete instructor "${instructorName}".`);
       }
 
-      // Fetch fresh list anyway
+      // Reload table to ensure consistency
       this.loadInstructors();
     }
   });
 
+  // Clear selectedInstructor
   this.selectedInstructor = null;
 }
+
 
 
 
