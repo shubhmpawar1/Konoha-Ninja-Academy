@@ -1,27 +1,8 @@
 import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  Instructor,
-  InstructorService,
-  PaginatedResponse
-} from '../../../core/services/instructor-service';
-import {
-  Observable,
-  Subject,
-  switchMap,
-  startWith,
-  map,
-  catchError,
-  of,
-  tap
-} from 'rxjs';
-import {
-  ReactiveFormsModule,
-  FormGroup,
-  FormBuilder,
-  Validators,
-  FormsModule
-} from '@angular/forms';
+import {Instructor,InstructorService,PaginatedResponse} from '../../../core/services/instructor-service';
+import {Observable,Subject,switchMap,startWith,map,catchError,of,tap} from 'rxjs';
+import {ReactiveFormsModule,FormGroup,FormBuilder,Validators,FormsModule} from '@angular/forms';
 import { InstructorsDelete } from '../instructors-delete/instructors-delete';
 import { InstructorsDisable } from '../instructors-disable/instructors-disable';
 import { InstructorsEdit } from '../instructors-edit/instructors-edit';
@@ -30,14 +11,7 @@ import { Notification } from '../../../core/services/notification';
 @Component({
   selector: 'app-instructors-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    InstructorsDelete,
-    InstructorsDisable,
-    InstructorsEdit
-  ],
+  imports: [CommonModule,ReactiveFormsModule,FormsModule,InstructorsDelete,InstructorsDisable,InstructorsEdit],
   templateUrl: './instructors-list.html',
   styleUrl: './instructors-list.css'
 })
@@ -104,9 +78,7 @@ export class InstructorsList implements OnInit, OnChanges {
 
         // 🌐 Backend call
         return this.instructorService
-          .getPaginatedInstructors(this.currentPage, this.pageSize)
-          .pipe(
-            tap(response => {
+          .getPaginatedInstructors(this.currentPage, this.pageSize).pipe(tap(response => {
               this.pageCache.set(cacheKey, response);
               this.isLoading = false;
             }),
