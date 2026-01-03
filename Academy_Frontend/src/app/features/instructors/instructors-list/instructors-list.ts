@@ -178,14 +178,16 @@ export class InstructorsList implements OnInit, OnChanges {
     // Delete the instructor
     this.instructorService.deleteInstructor(instructorId).subscribe({
       next: () => {
-        // Show toast
+        // Show success toast
         this.notify.success(`Instructor "${instructorName}" deleted successfully`);
 
-        // Force a fresh API call to get updated list
-        this.$paginatedData = this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize);
-
-        // Re-derive the instructor list from the updated data
-        this.$instructor = this.$paginatedData.pipe(map(res => res.data));
+        // Force a fresh API call without caching
+        this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize)
+          .subscribe(response => {
+            // Update Observables to trigger async pipe
+            this.$paginatedData = of(response); // no shareReplay here
+            this.$instructor = of(response.data);
+          });
 
       },
       error: (err) => {
@@ -197,14 +199,15 @@ export class InstructorsList implements OnInit, OnChanges {
           this.notify.error(`Failed to delete instructor "${instructorName}".`);
         }
 
-        // Reload the list even on error
+        // Reload list to sync UI
         this.loadInstructors();
       }
     });
 
-    // Clear the selected instructor
+    // Clear selectedInstructor to prevent double-delete
     this.selectedInstructor = null;
   }
+
 
 
 
