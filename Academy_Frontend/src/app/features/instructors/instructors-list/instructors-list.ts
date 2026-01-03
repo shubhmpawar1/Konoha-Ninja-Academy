@@ -166,35 +166,37 @@ onEditSave(): void {
     this.selectedInstructor = instructor;
     this.showDeleteModal = true;
   }
+onDeleteConfirmed(): void {
+  if (!this.selectedInstructor) return;
 
-  onDeleteConfirmed(): void {
-    if (!this.selectedInstructor) return;
+  // Store the instructor locally
+  const instructorId = this.selectedInstructor.id!;
 
-    this.instructorService
-      .deleteInstructor(this.selectedInstructor.id!)
-      .subscribe({
-        next: () => {
-          this.notify.success(
-            'Instructor deleted successfully'
-          );
-          this.closeDeleteModal();
-          this.loadInstructors();
-        },
-        error: (err) => {
-          if (err.status === 409) {
-            this.notify.error(
-              'Cannot delete instructor because students are assigned.'
-            );
-          } else {
-            this.notify.error(
-              'Failed to delete instructor.'
-            );
-          }
-          this.closeDeleteModal();
-          this.loadInstructors();
-        }
+  // Immediately close the modal
+  this.closeDeleteModal();
+
+  this.instructorService.deleteInstructor(instructorId).subscribe({
+    next: () => {
+      // Give Angular a tick to update the DOM
+      setTimeout(() => {
+        this.notify.success('Instructor deleted successfully');
+        this.loadInstructors();
       });
-  }
+    },
+    error: (err) => {
+      setTimeout(() => {
+        if (err.status === 409) {
+          this.notify.error(
+            'Cannot delete instructor because students are assigned.'
+          );
+        } else {
+          this.notify.error('Failed to delete instructor.');
+        }
+        this.loadInstructors();
+      });
+    }
+  });
+}
 
 
   closeDeleteModal(): void {
