@@ -175,15 +175,22 @@ export class InstructorsList implements OnInit, OnChanges {
     // Close the modal immediately
     this.closeDeleteModal();
 
-    // Delete the instructor
+    // Call the delete API
     this.instructorService.deleteInstructor(instructorId).subscribe({
       next: () => {
+        // Show success toast
         this.notify.success(`Instructor "${instructorName}" deleted successfully`);
 
-        // Reload the instructor list after deletion
+        // Update the UI instantly by filtering out the deleted instructor
+        this.$instructor = this.$instructor.pipe(
+          map(list => list.filter(i => i.id !== instructorId))
+        );
+
+        // Optional: reload from API to ensure data consistency
         this.loadInstructors();
       },
       error: (err) => {
+        // Show proper error messages based on status code
         if (err.status === 409) {
           this.notify.error(`Cannot delete instructor "${instructorName}" because students are assigned.`);
         } else if (err.status === 404) {
@@ -192,12 +199,12 @@ export class InstructorsList implements OnInit, OnChanges {
           this.notify.error(`Failed to delete instructor "${instructorName}".`);
         }
 
-        // Reload list to ensure table is updated
+        // Reload data to keep table in sync
         this.loadInstructors();
       }
     });
 
-    // Clear the selected instructor
+    // Clear the selected instructor to avoid accidental double-delete
     this.selectedInstructor = null;
   }
 
