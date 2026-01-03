@@ -167,34 +167,47 @@ onEditSave(): void {
     this.showDeleteModal = true;
   }
 
-  onDeleteConfirmed(): void {
-    if (!this.selectedInstructor) return;
+onDeleteConfirmed(): void {
+  if (!this.selectedInstructor) return;
 
-    this.instructorService
-      .deleteInstructor(this.selectedInstructor.id!)
-      .subscribe({
-        next: () => {
-          this.notify.success(
-            'Instructor deleted successfully'
-          );
-          this.closeDeleteModal();
-          this.loadInstructors();
-        },
-        error: (err) => {
-          if (err.status === 409) {
-            this.notify.error(
-              'Cannot delete instructor because students are assigned.'
-            );
-          } else {
-            this.notify.error(
-              'Failed to delete instructor.'
-            );
-          }
-          this.closeDeleteModal();
-          this.loadInstructors();
-        }
-      });
-  }
+  const instructorId = this.selectedInstructor.id!;
+  const instructorName = this.selectedInstructor.name;
+
+  // Close modal first
+  this.closeDeleteModal();
+
+  // Delete instructor
+  this.instructorService.deleteInstructor(instructorId).subscribe({
+    next: () => {
+      this.notify.success(`Instructor "${instructorName}" deleted successfully`);
+
+      // Update UI immediately by removing locally
+      this.$instructor = this.$instructor.pipe(
+        map(list => list.filter(i => i.id !== instructorId))
+      );
+
+      // Then fetch fresh paginated data from backend to stay in sync
+      this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize)
+        .subscribe(response => {
+          this.$paginatedData = of(response);   // replace Observable
+          this.$instructor = of(response.data); // replace Observable again to trigger async pipe
+        });
+    },
+    error: (err) => {
+      if (err.status === 409) {
+        this.notify.error(`Cannot delete instructor "${instructorName}" because students are assigned.`);
+      } else {
+        this.notify.error(`Failed to delete instructor "${instructorName}".`);
+      }
+
+      // Fetch fresh list anyway
+      this.loadInstructors();
+    }
+  });
+
+  this.selectedInstructor = null;
+}
+
 
 
   closeDeleteModal(): void {
