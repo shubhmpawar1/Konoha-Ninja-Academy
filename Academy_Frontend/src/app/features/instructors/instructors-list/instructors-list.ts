@@ -48,6 +48,7 @@ export class InstructorsList implements OnInit, OnChanges {
   $instructor!: Observable<Instructor[]>;
 
   private refresh$ = new Subject<void>();
+  private pageCache = new Map<string, PaginatedResponse>();
 
   currentPage = 1;
   pageSize = 5;
@@ -92,13 +93,28 @@ export class InstructorsList implements OnInit, OnChanges {
         this.isLoading = true;
         this.error = null;
       }),
-      switchMap(() =>
-        this.instructorService
+      switchMap(() => {
+        const cacheKey = `${this.currentPage}-${this.pageSize}`;
+
+        // ✅ Serve cached page instantly
+        if (this.pageCache.has(cacheKey)) {
+          this.isLoading = false;
+          return of(this.pageCache.get(cacheKey)!);
+        }
+
+        // 🌐 Backend call
+        return this.instructorService
           .getPaginatedInstructors(this.currentPage, this.pageSize)
           .pipe(
+            tap(response => {
+              this.pageCache.set(cacheKey, response);
+              this.isLoading = false;
+            }),
             catchError(err => {
               console.error('Load error:', err);
               this.error = 'Failed to load instructors';
+              this.isLoading = false;
+
               return of({
                 data: [],
                 pagination: {
@@ -111,9 +127,8 @@ export class InstructorsList implements OnInit, OnChanges {
                 }
               });
             })
-          )
-      ),
-      tap(() => (this.isLoading = false))
+          );
+      })
     );
 
     this.$instructor = this.$paginatedData.pipe(
@@ -131,6 +146,7 @@ export class InstructorsList implements OnInit, OnChanges {
   onPageSizeChange(size: number): void {
     this.pageSize = size;
     this.currentPage = 1;
+    this.pageCache.clear();
     this.refresh$.next();
   }
 
@@ -158,6 +174,7 @@ export class InstructorsList implements OnInit, OnChanges {
       .subscribe({
         next: () => {
           this.notify.success('Instructor updated successfully');
+          this.pageCache.clear();
           this.closeEditModal();
           this.refresh$.next();
         },
@@ -187,9 +204,10 @@ export class InstructorsList implements OnInit, OnChanges {
       .deleteInstructor(this.selectedInstructor.id!)
       .subscribe({
         next: () => {
-          this.notify.success('Instructor deleted successfully updated-3');
+          this.notify.success('Instructor deleted successfully');
+          this.pageCache.clear();
           this.closeDeleteModal();
-          this.refresh$.next(); // 🔥 refresh table
+          this.refresh$.next();
         },
         error: err => {
           if (err.status === 409) {
@@ -231,8 +249,9 @@ export class InstructorsList implements OnInit, OnChanges {
             ? 'Instructor disabled successfully'
             : 'Instructor enabled successfully'
         );
+        this.pageCache.clear();
         this.closeDisableModal();
-        this.refresh$.next(); // 🔥 refresh table
+        this.refresh$.next();
       },
       error: () => {
         this.notify.error('Failed to update instructor status');
