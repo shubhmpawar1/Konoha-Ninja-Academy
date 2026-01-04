@@ -1,7 +1,7 @@
-
 <div class="flex justify-center items-center px-4">
   <div class="w-full max-w-7xl">
-    
+
+    <!-- Items per page and summary -->
     <div class="mb-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
         <label class="text-sm text-gray-700">Items per page:</label>
@@ -18,62 +18,65 @@
       </div>
     </div>
 
-
+    <!-- Loading indicator -->
     <div *ngIf="isLoading" class="text-center py-8">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       <p class="mt-2 text-gray-600">Loading instructors...</p>
     </div>
 
-
+    <!-- Instructor table -->
     <div *ngIf="!isLoading" class="overflow-x-auto">
       <table class="min-w-full border border-gray-300 rounded-lg overflow-hidden">
         <thead class="bg-gray-100 text-gray-700">
           <tr>
-            <th class="px-4 py-3 text-left">Name</th>
-            <th class="px-4 py-3 text-left">Jutsu Type</th>
-            <th class="px-4 py-3 text-left">Chakra Type</th>
-            <th class="px-4 py-3 text-left">Signature Jutsu</th>
-            <th class="px-4 py-3 text-left">Summon Type</th>
-            <th class="px-4 py-3 text-center">Status</th>
-            <th class="px-4 py-3 text-center">Actions</th>
+            <th scope="col" class="px-4 py-3 text-left">Name</th>
+            <th scope="col" class="px-4 py-3 text-left">Jutsu Type</th>
+            <th scope="col" class="px-4 py-3 text-left">Chakra Type</th>
+            <th scope="col" class="px-4 py-3 text-left">Signature Jutsu</th>
+            <th scope="col" class="px-4 py-3 text-left">Summon Type</th>
+            <th scope="col" class="px-4 py-3 text-center">Status</th>
+            <th scope="col" class="px-4 py-3 text-center">Actions</th>
           </tr>
         </thead>
 
         <tbody>
 
+          <!-- No instructors -->
           <tr *ngIf="($instructor | async)?.length === 0">
             <td colspan="7" class="px-4 py-8 text-center text-gray-500">
               No instructors found. Add your first instructor to get started!
             </td>
           </tr>
 
-
-          <tr *ngFor="let instructor of ($instructor | async)" class="hover:bg-gray-50 border-b border-gray-200">
+          <!-- Instructors list -->
+          <tr *ngFor="let instructor of ($instructor | async); trackBy: trackByInstructorId"
+              class="hover:bg-gray-50 border-b border-gray-200">
             <td class="px-4 py-3">{{ instructor.name }}</td>
             <td class="px-4 py-3">{{ instructor.jutsu_type }}</td>
-            <td class="px-4 py-3">{{ instructor.chakra_type}}</td>
-            <td class="px-4 py-3">{{ instructor.signature_jutsu}}</td>
-            <td class="px-4 py-3">{{ instructor.summon_type}}</td>
+            <td class="px-4 py-3">{{ instructor.chakra_type }}</td>
+            <td class="px-4 py-3">{{ instructor.signature_jutsu }}</td>
+            <td class="px-4 py-3">{{ instructor.summon_type }}</td>
             <td class="px-4 py-3 text-center">
               <span class="px-2 py-1 text-xs font-medium rounded-full"
-                [ngClass]="instructor.is_active ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'">
+                    [ngClass]="instructor.is_active ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'">
                 {{ instructor.is_active ? 'Enabled' : 'Disabled' }}
               </span>
             </td>
             <td class="px-4 py-3 text-center">
               <div class="flex gap-2 justify-center">
                 <button class="px-3 py-1 text-sm text-white rounded hover:opacity-80 transition"
-                  [ngClass]="instructor.is_active ? 'bg-red-600' : 'bg-green-600'" (click)="openDisable(instructor)">
+                        [ngClass]="instructor.is_active ? 'bg-red-600' : 'bg-green-600'" 
+                        (click)="openDisable(instructor)">
                   {{ instructor.is_active ? 'Disable' : 'Enable' }}
                 </button>
                 <button class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                  (click)="openEdit(instructor)" [disabled]="!instructor.is_active"
-                  [ngClass]="!instructor.is_active ? 'opacity-50 cursor-not-allowed' : ''">
+                        (click)="openEdit(instructor)" [disabled]="!instructor.is_active"
+                        [ngClass]="!instructor.is_active ? 'opacity-50 cursor-not-allowed' : ''">
                   Edit
                 </button>
                 <button class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
-                  (click)="openDelete(instructor)" [disabled]="!instructor.is_active"
-                  [ngClass]="!instructor.is_active ? 'opacity-50 cursor-not-allowed' : ''">
+                        (click)="openDelete(instructor)" [disabled]="!instructor.is_active"
+                        [ngClass]="!instructor.is_active ? 'opacity-50 cursor-not-allowed' : ''">
                   Delete
                 </button>
               </div>
@@ -83,28 +86,27 @@
       </table>
     </div>
 
-
+    <!-- Pagination -->
     <div *ngIf="$paginatedData | async as paginatedData" class="mt-4 flex justify-between items-center">
-
       <button (click)="onPageChange(currentPage - 1)" [disabled]="!paginatedData.pagination.hasPrev"
-        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition">
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition">
         Previous
       </button>
 
-
       <div class="flex gap-2">
         <button *ngFor="let page of [].constructor(paginatedData.pagination.totalPages); let i = index"
-          (click)="onPageChange(i + 1)" [ngClass]="{
-            'bg-blue-600 text-white': (i + 1) === currentPage,
-            'bg-white text-gray-700 hover:bg-gray-100': (i + 1) !== currentPage
-          }" class="px-3 py-2 border border-gray-300 rounded transition">
+                (click)="onPageChange(i + 1)" 
+                [ngClass]="{
+                  'bg-blue-600 text-white': (i + 1) === currentPage,
+                  'bg-white text-gray-700 hover:bg-gray-100': (i + 1) !== currentPage
+                }"
+                class="px-3 py-2 border border-gray-300 rounded transition">
           {{ i + 1 }}
         </button>
       </div>
 
-
       <button (click)="onPageChange(currentPage + 1)" [disabled]="!paginatedData.pagination.hasNext"
-        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition">
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition">
         Next
       </button>
     </div>
@@ -112,15 +114,20 @@
   </div>
 </div>
 
-
-<app-instructors-disable *ngIf="showDisableModal && selectedInstructor" [isActive]="selectedInstructor.is_active"
-  (confirmed)="onDisableConfirmed()" (cancelled)="closeDisableModal()">
+<!-- Modals -->
+<app-instructors-disable *ngIf="showDisableModal && selectedInstructor" 
+                         [isActive]="selectedInstructor.is_active"
+                         (confirmed)="onDisableConfirmed()" 
+                         (cancelled)="closeDisableModal()">
 </app-instructors-disable>
 
-<app-instructors-delete *ngIf="showDeleteModal && selectedInstructor" (confirmed)="onDeleteConfirmed()"
-  (cancelled)="closeDeleteModal()">
+<app-instructors-delete *ngIf="showDeleteModal && selectedInstructor" 
+                        (confirmed)="onDeleteConfirmed()"
+                        (cancelled)="closeDeleteModal()">
 </app-instructors-delete>
 
-<app-instructors-edit *ngIf="selectedInstructor && editForm && showEditModal" [form]="editForm" (save)="onEditSave()"
-  (cancelled)="closeEditModal()">
+<app-instructors-edit *ngIf="selectedInstructor && editForm && showEditModal" 
+                      [form]="editForm" 
+                      (save)="onEditSave()"
+                      (cancelled)="closeEditModal()">
 </app-instructors-edit>

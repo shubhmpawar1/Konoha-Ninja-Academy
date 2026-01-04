@@ -40,11 +40,10 @@ export class InstructorsList implements OnInit, OnChanges {
 
   Math = Math;
 
-  constructor(
-    private instructorService: InstructorService, private fb: FormBuilder, public notify: Notification
-  ) { }
+  constructor(private instructorService: InstructorService, private fb: FormBuilder, public notify: Notification) { }
 
   ngOnInit(): void {
+    this.refresh$.next();
     this.buildStream();
   }
 
@@ -63,21 +62,15 @@ export class InstructorsList implements OnInit, OnChanges {
         this.error = null;
       }),
       switchMap(() =>
-        this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize).pipe(catchError(err => {
-          console.error(err);
-          this.error = 'Failed to load instructors';
-          return of({
-            data: [],
-            pagination: {
-              page: 1,
-              limit: this.pageSize,
-              total: 0,
-              totalPages: 0,
-              hasNext: false,
-              hasPrev: false
-            }
-          });
-        })
+        this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize).pipe(
+          catchError(err => {
+            console.error(err);
+            this.error = 'Failed to load instructors';
+            return of({
+              data: [],
+              pagination: { page: 1, limit: this.pageSize, total: 0, totalPages: 0, hasNext: false, hasPrev: false }
+            });
+          })
         )
       ),
       tap(() => (this.isLoading = false))
@@ -88,7 +81,7 @@ export class InstructorsList implements OnInit, OnChanges {
     );
   }
 
- 
+
   onPageChange(page: number): void {
     this.currentPage = page;
     this.refresh$.next();
@@ -186,11 +179,11 @@ export class InstructorsList implements OnInit, OnChanges {
     if (!this.selectedInstructor) return;
 
     const instructor = this.selectedInstructor;
-    const action$ = instructor.is_active? this.instructorService.disableInstructor(instructor.id!): this.instructorService.enableInstructor(instructor.id!);
+    const action$ = instructor.is_active ? this.instructorService.disableInstructor(instructor.id!) : this.instructorService.enableInstructor(instructor.id!);
 
     action$.subscribe({
       next: () => {
-        this.notify.success(instructor.is_active? 'Instructor disabled successfully': 'Instructor enabled successfully');
+        this.notify.success(instructor.is_active ? 'Instructor disabled successfully' : 'Instructor enabled successfully');
         this.closeDisableModal();
         this.refresh$.next();
       },
