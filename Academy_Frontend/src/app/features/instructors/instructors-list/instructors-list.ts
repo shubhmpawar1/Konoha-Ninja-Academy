@@ -26,7 +26,7 @@ export class InstructorsList implements OnInit, OnChanges {
 
   currentPage = 1;
   pageSize = 5;
-  pageSizeOptions = [5, 10, 20, 50];
+  pageSizeOptions = [5, 10];
 
   selectedInstructor: Instructor | null = null;
   editForm!: FormGroup;
