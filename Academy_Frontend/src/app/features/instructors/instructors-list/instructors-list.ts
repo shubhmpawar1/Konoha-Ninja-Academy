@@ -1,33 +1,8 @@
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-  ChangeDetectionStrategy
-} from '@angular/core';
+import { Component, Input, OnChanges, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  Instructor,
-  InstructorService,
-  PaginatedResponse
-} from '../../../core/services/instructor-service';
-import {
-  Observable,
-  Subject,
-  switchMap,
-  startWith,
-  map,
-  catchError,
-  of,
-  tap
-} from 'rxjs';
-import {
-  ReactiveFormsModule,
-  FormGroup,
-  FormBuilder,
-  Validators,
-  FormsModule
-} from '@angular/forms';
+import { Instructor, InstructorService, PaginatedResponse } from '../../../core/services/instructor-service';
+import { Observable, Subject, switchMap, startWith, map, catchError, of, tap } from 'rxjs';
+import { ReactiveFormsModule, FormGroup, FormBuilder, Validators, FormsModule } from '@angular/forms';
 import { InstructorsDelete } from '../instructors-delete/instructors-delete';
 import { InstructorsDisable } from '../instructors-disable/instructors-disable';
 import { InstructorsEdit } from '../instructors-edit/instructors-edit';
@@ -36,14 +11,7 @@ import { Notification } from '../../../core/services/notification';
 @Component({
   selector: 'app-instructors-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    InstructorsDelete,
-    InstructorsDisable,
-    InstructorsEdit
-  ],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, InstructorsDelete, InstructorsDisable, InstructorsEdit],
   templateUrl: './instructors-list.html',
   styleUrl: './instructors-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -73,12 +41,8 @@ export class InstructorsList implements OnInit, OnChanges {
   Math = Math;
 
   constructor(
-    private instructorService: InstructorService,
-    private fb: FormBuilder,
-    public notify: Notification
-  ) {}
-
-  // ---------------- INIT ----------------
+    private instructorService: InstructorService, private fb: FormBuilder, public notify: Notification
+  ) { }
 
   ngOnInit(): void {
     this.buildStream();
@@ -90,7 +54,6 @@ export class InstructorsList implements OnInit, OnChanges {
     }
   }
 
-  // ---------------- STREAM ----------------
 
   private buildStream(): void {
     this.$paginatedData = this.refresh$.pipe(
@@ -100,25 +63,22 @@ export class InstructorsList implements OnInit, OnChanges {
         this.error = null;
       }),
       switchMap(() =>
-        this.instructorService
-          .getPaginatedInstructors(this.currentPage, this.pageSize)
-          .pipe(
-            catchError(err => {
-              console.error(err);
-              this.error = 'Failed to load instructors';
-              return of({
-                data: [],
-                pagination: {
-                  page: 1,
-                  limit: this.pageSize,
-                  total: 0,
-                  totalPages: 0,
-                  hasNext: false,
-                  hasPrev: false
-                }
-              });
-            })
-          )
+        this.instructorService.getPaginatedInstructors(this.currentPage, this.pageSize).pipe(catchError(err => {
+          console.error(err);
+          this.error = 'Failed to load instructors';
+          return of({
+            data: [],
+            pagination: {
+              page: 1,
+              limit: this.pageSize,
+              total: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrev: false
+            }
+          });
+        })
+        )
       ),
       tap(() => (this.isLoading = false))
     );
@@ -128,8 +88,7 @@ export class InstructorsList implements OnInit, OnChanges {
     );
   }
 
-  // ---------------- PAGINATION ----------------
-
+ 
   onPageChange(page: number): void {
     this.currentPage = page;
     this.refresh$.next();
@@ -141,13 +100,10 @@ export class InstructorsList implements OnInit, OnChanges {
     this.refresh$.next();
   }
 
-  // ---------------- TRACK BY (CRITICAL) ----------------
 
   trackByInstructorId(index: number, instructor: Instructor): number {
     return instructor.id!;
   }
-
-  // ---------------- EDIT ----------------
 
   openEdit(instructor: Instructor): void {
     this.selectedInstructor = instructor;
@@ -186,7 +142,7 @@ export class InstructorsList implements OnInit, OnChanges {
     this.selectedInstructor = null;
   }
 
-  // ---------------- DELETE ----------------
+
 
   openDelete(instructor: Instructor): void {
     this.selectedInstructor = instructor;
@@ -222,7 +178,6 @@ export class InstructorsList implements OnInit, OnChanges {
     this.selectedInstructor = null;
   }
 
-  // ---------------- DISABLE / ENABLE ----------------
 
   openDisable(instructor: Instructor): void {
     this.selectedInstructor = instructor;
