@@ -18,42 +18,30 @@ import { Notification } from '../../../core/services/notification';
 })
 export class InstructorsList implements OnInit, OnChanges {
   @Input() reloadTrigger: any;
-
   $paginatedData!: Observable<PaginatedResponse>;
   $instructor!: Observable<Instructor[]>;
-
   private refresh$ = new Subject<void>();
-
   currentPage = 1;
   pageSize = 5;
   pageSizeOptions = [5, 10];
-
   selectedInstructor: Instructor | null = null;
   editForm!: FormGroup;
-
   showDisableModal = false;
   showDeleteModal = false;
   showEditModal = false;
-
   isLoading = false;
   error: string | null = null;
-
   Math = Math;
-
   constructor(private instructorService: InstructorService, private fb: FormBuilder, public notify: Notification) { }
-
   ngOnInit(): void {
     this.refresh$.next();
     this.buildStream();
   }
-
   ngOnChanges(): void {
     if (this.reloadTrigger) {
       this.refresh$.next();
     }
   }
-
-
   private buildStream(): void {
     this.$paginatedData = this.refresh$.pipe(
       startWith(void 0),
@@ -80,38 +68,26 @@ export class InstructorsList implements OnInit, OnChanges {
       map(res => res.data)
     );
   }
-
-
   onPageChange(page: number): void {
     this.currentPage = page;
     this.refresh$.next();
   }
-
   onPageSizeChange(size: number): void {
     this.pageSize = size;
     this.currentPage = 1;
     this.refresh$.next();
   }
-
-
   trackByInstructorId(index: number, instructor: Instructor): number {
     return instructor.id!;
   }
-
   openEdit(instructor: Instructor): void {
     this.selectedInstructor = instructor;
     this.showEditModal = true;
 
     this.editForm = this.fb.group({
-      name: [instructor.name, [Validators.required, Validators.minLength(2)]],
-      jutsu_type: [instructor.jutsu_type, Validators.required],
-      chakra_type: [instructor.chakra_type],
-      signature_jutsu: [instructor.signature_jutsu],
-      summon_type: [instructor.summon_type],
-      is_active: [instructor.is_active]
+      name: [instructor.name, [Validators.required, Validators.minLength(2)]], jutsu_type: [instructor.jutsu_type, Validators.required], chakra_type: [instructor.chakra_type], signature_jutsu: [instructor.signature_jutsu], summon_type: [instructor.summon_type], is_active: [instructor.is_active]
     });
   }
-
   onEditSave(): void {
     if (!this.selectedInstructor || this.editForm.invalid) return;
 
@@ -129,19 +105,14 @@ export class InstructorsList implements OnInit, OnChanges {
         }
       });
   }
-
   closeEditModal(): void {
     this.showEditModal = false;
     this.selectedInstructor = null;
   }
-
-
-
   openDelete(instructor: Instructor): void {
     this.selectedInstructor = instructor;
     this.showDeleteModal = true;
   }
-
   onDeleteConfirmed(): void {
     if (!this.selectedInstructor) return;
 
@@ -163,18 +134,14 @@ export class InstructorsList implements OnInit, OnChanges {
         }
       });
   }
-
   closeDeleteModal(): void {
     this.showDeleteModal = false;
     this.selectedInstructor = null;
   }
-
-
   openDisable(instructor: Instructor): void {
     this.selectedInstructor = instructor;
     this.showDisableModal = true;
   }
-
   onDisableConfirmed(): void {
     if (!this.selectedInstructor) return;
 
@@ -193,7 +160,6 @@ export class InstructorsList implements OnInit, OnChanges {
       }
     });
   }
-
   closeDisableModal(): void {
     this.showDisableModal = false;
     this.selectedInstructor = null;
