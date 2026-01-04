@@ -162,9 +162,7 @@ export class InstructorsList implements OnInit, OnChanges {
         },
         error: err => {
           if (err.status === 409) {
-            this.notify.error(
-              'Cannot delete instructor because students are assigned'
-            );
+            this.notify.error('Cannot delete instructor because students are assigned');
           } else {
             this.notify.error('Failed to delete instructor');
           }
@@ -188,17 +186,11 @@ export class InstructorsList implements OnInit, OnChanges {
     if (!this.selectedInstructor) return;
 
     const instructor = this.selectedInstructor;
-    const action$ = instructor.is_active
-      ? this.instructorService.disableInstructor(instructor.id!)
-      : this.instructorService.enableInstructor(instructor.id!);
+    const action$ = instructor.is_active? this.instructorService.disableInstructor(instructor.id!): this.instructorService.enableInstructor(instructor.id!);
 
     action$.subscribe({
       next: () => {
-        this.notify.success(
-          instructor.is_active
-            ? 'Instructor disabled successfully'
-            : 'Instructor enabled successfully'
-        );
+        this.notify.success(instructor.is_active? 'Instructor disabled successfully': 'Instructor enabled successfully');
         this.closeDisableModal();
         this.refresh$.next();
       },
