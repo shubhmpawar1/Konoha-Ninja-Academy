@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
 export interface InstructorCounts {
   total_instructors: number;
   active_instructors: number;
@@ -16,7 +15,6 @@ export interface Instructor {
   summon_type?: string;
   is_active: boolean;
 }
-
 export interface PaginationMeta {
   page: number;
   limit: number;
@@ -25,7 +23,6 @@ export interface PaginationMeta {
   hasNext: boolean;
   hasPrev: boolean;
 }
-
 export interface PaginatedResponse {
   data: Instructor[];
   pagination: PaginationMeta;
@@ -65,5 +62,4 @@ export class InstructorService {
   deleteInstructor(id: number): Observable<Instructor> {
     return this.http.delete<Instructor>(`${this.API_URL}/instructors/${id}`);
   }
-
 }

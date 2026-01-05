@@ -7,7 +7,6 @@ import { InstructorsDelete } from '../instructors-delete/instructors-delete';
 import { InstructorsDisable } from '../instructors-disable/instructors-disable';
 import { InstructorsEdit } from '../instructors-edit/instructors-edit';
 import { Notification } from '../../../core/services/notification';
-
 @Component({
   selector: 'app-instructors-list',
   standalone: true,

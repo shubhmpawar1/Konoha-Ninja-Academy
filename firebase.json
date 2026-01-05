@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "/dist/Academy_Frontend/browser",
+    "public": "dist/Academy_Frontend/browser",
     "ignore": [
       "firebase.json",
       "**/.*",

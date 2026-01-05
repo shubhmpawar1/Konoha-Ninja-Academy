@@ -8,11 +8,9 @@
           <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
         </select>
       </div>
-
       <div *ngIf="$paginatedData | async as paginatedData" class="text-sm text-gray-600">
-        Showing {{ (currentPage - 1) * pageSize + 1 }} -
-        {{ Math.min(currentPage * pageSize, paginatedData.pagination.total) }} of
-        {{ paginatedData.pagination.total }} instructors
+        Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize,
+        paginatedData.pagination.total) }} of{{ paginatedData.pagination.total }} instructors
       </div>
     </div>
     <div *ngIf="isLoading" class="text-center py-8">

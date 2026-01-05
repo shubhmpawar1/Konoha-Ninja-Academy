@@ -3,7 +3,6 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InstructorService } from '../../../core/services/instructor-service';
 import { Notification } from '../../../core/services/notification';
-
 @Component({
   selector: 'app-instructors-form',
   imports: [ReactiveFormsModule, CommonModule],
@@ -14,15 +13,7 @@ export class InstructorsForm {
   is_Add_Mode: boolean = false;
   instructorForm!: FormGroup;
   @Output() instructorAdded = new EventEmitter<void>();
-
-  constructor(
-    private fb: FormBuilder, 
-    private instructorService: InstructorService,
-    private notify: Notification
-  ) {
-    this.initializeForm();
-  }
-
+  constructor(private fb: FormBuilder, private instructorService: InstructorService, private notify: Notification) { this.initializeForm(); }
   private initializeForm() {
     this.instructorForm = this.fb.group({
       name: ['', [Validators.required, Validators.pattern(/^[A-Za-z]+(?: [A-Za-z]+)*$/), Validators.minLength(2)]],
@@ -33,16 +24,12 @@ export class InstructorsForm {
       is_active: [true],
     });
   }
-
   Add_Ins(): void {
     this.is_Add_Mode = true;
   }
-
   onSubmit(): void {
     if (this.instructorForm.invalid) return;
-
     const value = this.instructorForm.value;
-    
     this.instructorService.addInstructor(value).subscribe({
       next: () => {
         this.notify.success('Instructor added successfully');
@@ -56,7 +43,6 @@ export class InstructorsForm {
       }
     });
   }
-
   onCancel(): void {
     this.is_Add_Mode = false;
     this.initializeForm();
